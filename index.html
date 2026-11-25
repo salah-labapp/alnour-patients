@@ -84,7 +84,7 @@ const routes={
 '/prices':()=>{
  return `<input id="q" type="search" placeholder="ابحث عن تحليل..." value="${esc(state.q)}" autocomplete="off">
 <div class="card" id="list"></div><div id="selbar"></div>`},
-'/book':()=>`<div class="card"><label>الاسم</label><input id="bn" placeholder="اسمك"><label>التاريخ</label><input id="bd" type="date"><label>الوقت المناسب</label><select id="bt"><option>صباحًا</option><option>ظهرًا</option><option>مساءً</option></select>
+'/book':()=>`<div class="card"><label>الاسم</label><input id="bn" placeholder="اسمك"><label>التاريخ</label><input id="bd" type="date"><label>الساعة المناسبة (المعمل مفتوح من 8 صباحًا حتى 10 مساءً)</label><select id="bt"></select>
 <label>ملاحظات (اختياري)</label><textarea id="bnote" rows="2" placeholder="مثال: تحليل صائم، زيارة منزلية..."></textarea>
 <div class="note" id="btests"></div><div class="err" id="berr"></div><a class="btn wa" id="bsend" href="#">أرسل طلب الحجز على واتساب</a></div>`,
 '/rx':()=>`<div class="card"><b>ابعت الروشتة للمعمل</b>
@@ -121,9 +121,13 @@ function bind(r){
    e.target.href=waLink(msg);e.target.target='_blank';e.target.rel='noopener'}}
  if(r==='/prices'){$('#q').oninput=e=>{state.q=e.target.value;renderList()};
   $('#list').onclick=e=>{const b=e.target.closest('.add');if(!b)return;const id=+b.dataset.id;state.sel.has(id)?state.sel.delete(id):state.sel.add(id);safeSet('sel',JSON.stringify([...state.sel]));renderList()};renderList()}
- if(r==='/book'){$('#bd').min=new Date().toISOString().slice(0,10);
+ if(r==='/book'){const pad=n=>String(n).padStart(2,'0'),nw=new Date(),today=nw.getFullYear()+'-'+pad(nw.getMonth()+1)+'-'+pad(nw.getDate());$('#bd').min=today;
+  const hl=h=>{const ap=h<12?'صباحًا':(h<15?'ظهرًا':(h<18?'عصرًا':'مساءً')),x=h%12||12;return x+':00 '+ap};
+  const fillHours=()=>{const bt=$('#bt'),keep=bt.value;const t=$('#bd').value===today,cur=new Date().getHours()*60+new Date().getMinutes();let o='';for(let h=8;h<=22;h++){if(t&&h*60<=cur)continue;o+='<option>'+hl(h)+'</option>'}
+   bt.innerHTML=o||'<option value="">انتهت مواعيد النهارده، اختار يوم تاني</option>';if(keep&&[...bt.options].some(x=>x.value===keep))bt.value=keep};
+  fillHours();$('#bd').addEventListener('change',fillHours);$('#bd').addEventListener('input',fillHours);
   $('#btests').innerHTML=chosen().length?'التحاليل المختارة: '+chosen().map(t=>esc(t.name)).join('، ')+' (الإجمالي '+total()+' جنيه)':'لم تختر تحاليل. تقدر تختار من صفحة الأسعار أو تكتبها في الملاحظات.';
-  $('#bsend').onclick=e=>{const n=$('#bn').value.trim(),d=$('#bd').value;if(!n||!d){e.preventDefault();$('#berr').textContent='من فضلك اكتب الاسم واختر التاريخ.';return}
+  $('#bsend').onclick=e=>{const n=$('#bn').value.trim(),d=$('#bd').value;if(!n||!d||!$('#bt').value){e.preventDefault();$('#berr').textContent='من فضلك اكتب الاسم واختر التاريخ والساعة.';return}
    $('#berr').textContent='';const note=$('#bnote').value.trim();
    const msg=`السلام عليكم، عايز أحجز موعد في ${L.name}.\nالاسم: ${n}\nالتاريخ: ${d}\nالوقت: ${$('#bt').value}`+testsMsg()+(note?'\nملاحظات: '+note:'');
    e.target.href=waLink(msg);e.target.target='_blank';e.target.rel='noopener'}}
