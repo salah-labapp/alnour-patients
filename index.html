@@ -38,6 +38,8 @@ label{font-size:14px;font-weight:600}
 .warnbox{background:#fff4d6;border:2px solid #f5b301;border-radius:10px;padding:10px;font-size:14px;margin:8px 0}
 .ok{color:#2e7d32;font-size:14px;margin:6px 0}.err{line-height:1.7}
 .btn.alt{color:#7b2cbf;border-color:#7b2cbf;background:#fff}
+
+.numbox{background:#fff7e0;border:2px solid #f5b301;border-radius:12px;padding:10px;text-align:center;margin:10px 0}.numbox b{display:block;font-size:24px;color:#7b2cbf;letter-spacing:1px;margin:4px 0}.btn.copy{margin-top:6px;padding:10px}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;background-size:cover;background-position:center}
 .top img.lg{width:48px;height:48px;border-radius:50%;background:#fff;border:2px solid #f5b301}
 .hero{display:flex;gap:12px;align-items:center}.hero img{width:72px;height:72px;border-radius:50%;border:3px solid #f5b301}
@@ -86,16 +88,17 @@ const routes={
 <label>ملاحظات (اختياري)</label><textarea id="bnote" rows="2" placeholder="مثال: تحليل صائم، زيارة منزلية..."></textarea>
 <div class="note" id="btests"></div><div class="err" id="berr"></div><a class="btn wa" id="bsend" href="#">أرسل طلب الحجز على واتساب</a></div>`,
 '/rx':()=>`<div class="card"><b>ابعت الروشتة للمعمل</b>
-<div class="warnbox" id="inapp" hidden>أنت فاتح التطبيق من داخل تطبيق تاني (واتساب أو فيسبوك). افتح الرابط من متصفح الموبايل (Chrome أو Safari) عشان الإرسال يشتغل.</div>
-<ol class="steps"><li>اضغط "صوّر الروشتة" أو "اختار من المعرض".</li><li>اضغط "إرسال على واتساب" واختار واتساب من القايمة.</li><li>لو القايمة مظهرتش، اضغط "افتح واتساب المعمل" وضيف الصورة بنفسك (علامة المشبك ثم المعرض).</li></ol>
+<div class="warnbox" id="inapp" hidden>أنت فاتح التطبيق من داخل تطبيق تاني. افتح الرابط من متصفح الموبايل (Chrome أو Safari) عشان الإرسال يشتغل.</div>
+<div class="numbox"><div>رقم المعمل على واتساب</div><b dir="ltr" id="rxnum">${L.phone}</b><button class="btn alt copy" id="rxcopy" type="button">نسخ الرقم</button><div class="ok" id="rxcopied"></div></div>
+<ol class="steps"><li>صوّر الروشتة أو اختارها من المعرض.</li><li>اضغط "شارك على واتساب".</li><li>اختار <b>واتساب</b> من القايمة، وبعدها دوّر على <b>معمل النور</b> (${L.phone}) أو الصق الرقم في البحث.</li><li>لو الرقم مش محفوظ عندك: اضغط "افتح محادثة واتساب المعمل" وضيف الصورة بنفسك من علامة المشبك.</li></ol>
 <label class="btn pick" for="rxcam">صوّر الروشتة</label><input id="rxcam" type="file" accept="image/*" capture="environment" hidden>
 <label class="btn pick alt2" for="rxgal">اختار من المعرض</label><input id="rxgal" type="file" accept="image/*" hidden>
 <img id="rxp" class="preview" alt="" hidden>
 <div class="err" id="rxerr"></div><div class="ok" id="rxok"></div>
-<button class="btn wa" id="rxs" type="button">إرسال على واتساب</button>
-<a class="btn alt" id="rxopen" href="${waLink('السلام عليكم، هبعتلكم صورة الروشتة من تطبيق '+L.name)}" target="_blank" rel="noopener">افتح واتساب المعمل</a>
+<button class="btn wa" id="rxs" type="button">شارك على واتساب</button>
+<a class="btn alt" id="rxopen" href="${waLink('السلام عليكم، هبعتلكم صورة الروشتة من تطبيق '+L.name)}" target="_blank" rel="noopener">افتح محادثة واتساب المعمل</a>
 <a class="btn alt" id="rxsave" href="#" download="roshta.jpg" hidden>حفظ الصورة على الموبايل</a>
-<p class="note">لو الصورة مظهرتش في الإرسال: اضغط مطولاً على الصورة فوق واختار حفظ أو نسخ.</p></div>`,
+<p class="note">الصورة بتفضل على موبايلك ومبتترفعش على أي سيرفر. موقع الويب مش بيقدر يرفقها في واتساب لوحده، عشان كده الخطوات دي.</p></div>`,
 '/contact':()=>`<div class="card"><b>${L.name}</b><p>${L.phone}</p></div><a class="btn" href="tel:${L.phone}">اتصال هاتفي</a><a class="btn wa" href="${waLink('السلام عليكم، عايز أستفسر من معامل النور')}" target="_blank" rel="noopener">راسلنا على واتساب</a>`
 };
 function renderList(){const q=state.q.trim().toLowerCase();
@@ -114,14 +117,17 @@ function bind(r){
  if(r==='/rx'){
   if(/FBAN|FBAV|Instagram|Line\/|; wv\)|WhatsApp/i.test(navigator.userAgent))$('#inapp').hidden=false;
   const onFile=inp=>{const f=inp.files[0];if(!f)return;$('#rxerr').textContent='';$('#rxok').textContent='جاري تجهيز الصورة...';
-   prep(f).then(j=>{state.rxFile=j;state.rxUrl=URL.createObjectURL(j);const p=$('#rxp');p.src=state.rxUrl;p.hidden=false;const sv=$('#rxsave');sv.href=state.rxUrl;sv.hidden=false;$('#rxok').textContent='الصورة جاهزة. اضغط إرسال على واتساب.'}).catch(()=>{$('#rxok').textContent='';$('#rxerr').textContent='معرفناش نقرأ الصورة. جرب تصوّر تاني.'})};
+   prep(f).then(j=>{state.rxFile=j;state.rxUrl=URL.createObjectURL(j);const p=$('#rxp');p.src=state.rxUrl;p.hidden=false;const sv=$('#rxsave');sv.href=state.rxUrl;sv.hidden=false;$('#rxok').textContent='الصورة جاهزة. اضغط "شارك على واتساب" واختار معمل النور.'}).catch(()=>{$('#rxok').textContent='';$('#rxerr').textContent='معرفناش نقرأ الصورة. جرب تصوّر تاني.'})};
+  $('#rxcopy').onclick=()=>{const n=L.phone,done=()=>{$('#rxcopied').textContent='تم نسخ الرقم '+n};
+   const old=()=>{try{const t=document.createElement('input');t.value=n;document.body.appendChild(t);t.select();t.setSelectionRange(0,99);const ok=document.execCommand('copy');t.remove();ok?done():$('#rxcopied').textContent='انسخ الرقم يدويًا: '+n}catch(e){$('#rxcopied').textContent='انسخ الرقم يدويًا: '+n}};
+   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(n).then(done).catch(old);else old()};
   $('#rxcam').onchange=e=>onFile(e.target);$('#rxgal').onchange=e=>onFile(e.target);
   $('#rxs').onclick=()=>{const f=state.rxFile;if(!f){$('#rxerr').textContent='صوّر الروشتة الأول أو اختارها من المعرض.';return}
    const text='السلام عليكم، دي صورة الروشتة من تطبيق '+L.name;let canShare=false;
    try{canShare=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]}))}catch(e){}
-   if(canShare){navigator.share({files:[f],text}).then(()=>{$('#rxerr').textContent='';$('#rxok').textContent='تم فتح المشاركة. تأكد إنك بعت الصورة في محادثة المعمل.'}).catch(e=>{if(e&&e.name==='AbortError')return;fallback('المشاركة المباشرة مش شغالة على جهازك.')});return}
+   if(canShare){navigator.share({files:[f],text}).then(()=>{$('#rxerr').textContent='';$('#rxok').textContent='تأكد إنك اخترت معمل النور (01027238272) وضغطت إرسال.'}).catch(e=>{if(e&&e.name==='AbortError')return;fallback('المشاركة المباشرة مش شغالة على جهازك.')});return}
    fallback('جهازك مش بيدعم المشاركة المباشرة للصور.')};
-  function fallback(why){$('#rxok').textContent='';$('#rxerr').innerHTML=why+' اتبع الخطوات: 1) اضغط "حفظ الصورة على الموبايل". 2) اضغط "افتح واتساب المعمل". 3) في المحادثة اضغط المشبك واختار الصورة وابعتها.';
+  function fallback(why){$('#rxok').textContent='';$('#rxerr').innerHTML=why+' اتبع الخطوات: 1) اضغط "حفظ الصورة على الموبايل". 2) اضغط "افتح محادثة واتساب المعمل". 3) في المحادثة اضغط المشبك واختار الصورة وابعتها.';
    try{if(navigator.clipboard&&window.ClipboardItem)navigator.clipboard.write([new ClipboardItem({'image/png':pngBlob(state.rxFile)})]).catch(()=>{})}catch(e){}
    $('#rxsave').scrollIntoView({behavior:'smooth',block:'center'})}
  }
