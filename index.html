@@ -25,6 +25,7 @@ label{font-size:14px;font-weight:600}
 .price{font-weight:700;color:#c2187a;white-space:nowrap}.cat{font-size:12px;color:#8a6a85}
 .chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px}.chip{flex:none;border:1px solid #e3b8d6;background:#fff;border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer}.chip.on{background:#7b2cbf;color:#fff;border-color:#7b2cbf}
 .add{border:1px solid #7b2cbf;color:#7b2cbf;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}.add.on{background:#7b2cbf;color:#fff}
+.qwrap{position:relative}.qwrap input{padding-left:46px}.qx{position:absolute;left:8px;top:12px;width:30px;height:30px;border-radius:50%;border:1px solid #e3b8d6;background:#fff;color:#e0218a;font-size:15px;cursor:pointer;padding:0;line-height:1}.sel .acts{display:flex;gap:12px;align-items:center}.sel button{border:2px solid #ffd54a;background:transparent;color:#ffd54a;border-radius:8px;padding:6px 12px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}
 .sel{position:sticky;bottom:64px;background:#7b2cbf;color:#fff;border-radius:12px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:10px}
 .sel a{color:#fff;font-weight:700}
 .preview{width:100%;border-radius:12px;margin-top:8px}.note{font-size:13px;color:#6a4a66}.err{color:#b3261e;font-size:14px}
@@ -82,7 +83,7 @@ const routes={
 <div class="grid"><a class="big" href="#/prices"><span><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#e0218a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M8 15h8"/></svg></span>أسعار التحاليل</a><a class="big" href="#/book"><span><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#e0218a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>احجز موعد</a><a class="big" href="#/rx"><span><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#e0218a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="4"/></svg></span>ابعت الروشتة</a><a class="big" href="${waLink('السلام عليكم، عايز أستفسر من معامل النور')}" target="_blank" rel="noopener"><span><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#e0218a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.7 7L4 20l1.2-4.6A8 8 0 1 1 21 12z"/></svg></span>واتساب</a></div>
 <button class="btn sharebtn" id="shareapp" type="button"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;margin-inline-end:8px"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>شارك التطبيق مع أصحابك وأهلك</button><div class="ok" id="sharemsg"></div><a class="btn alt" href="#/feedback">قيّم المعمل وشاركنا رأيك</a><a class="btn alt" href="tel:${L.phone}">اتصل ${L.phone}</a>`,
 '/prices':()=>{
- return `<input id="q" type="search" placeholder="ابحث عن تحليل..." value="${esc(state.q)}" autocomplete="off">
+ return `<div class="qwrap"><input id="q" type="search" placeholder="ابحث عن تحليل..." value="${esc(state.q)}" autocomplete="off"><button type="button" class="qx" id="qx" aria-label="مسح البحث" ${state.q.trim()?'':'hidden'}>✕</button></div>
 <div class="card" id="list"></div><div id="selbar"></div>`},
 '/book':()=>`<div class="card"><label>الاسم</label><input id="bn" placeholder="اسمك"><label>التاريخ</label><input id="bd" type="date"><label>الساعة المناسبة (المعمل مفتوح من 8 صباحًا حتى 10 مساءً)</label><select id="bt"></select>
 <label>ملاحظات (اختياري)</label><textarea id="bnote" rows="2" placeholder="مثال: تحليل صائم، زيارة منزلية..."></textarea>
@@ -102,11 +103,13 @@ const routes={
 '/feedback':()=>`<div class="card"><b>رأيك يهمنا</b><p class="note">اختار عدد النجوم واكتب رأيك. هيتجهز لك رسالة واتساب للمعمل، وانت اللي بتضغط إرسال. مفيش حاجة بتتخزن على أي سيرفر.</p><div class="stars" id="stars" role="radiogroup" aria-label="التقييم">${[1,2,3,4,5].map(n=>`<button type="button" class="star" data-n="${n}" aria-label="${n} من 5"><svg viewBox="0 0 24 24" width="40" height="40"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg></button>`).join('')}</div><div class="note" id="starlbl"></div><label>رأيك (اختياري)</label><textarea id="fbtxt" rows="4" placeholder="اكتب تجربتك مع المعمل..."></textarea><label>اسمك (اختياري)</label><input id="fbname" placeholder="ممكن تسيبه فاضي"><div class="err" id="fberr"></div><a class="btn wa" id="fbsend" href="#">أرسل التقييم على واتساب</a></div>`,
 '/contact':()=>`<div class="card"><b>${L.name}</b><p>${L.phone}</p></div><a class="btn" href="tel:${L.phone}">اتصال هاتفي</a><a class="btn wa" href="${waLink('السلام عليكم، عايز أستفسر من معامل النور')}" target="_blank" rel="noopener">راسلنا على واتساب</a><button class="btn sharebtn" id="shareapp" type="button">شارك التطبيق</button><div class="ok" id="sharemsg"></div><a class="btn alt" href="#/feedback">قيّم المعمل</a>`
 };
+function selbarHtml(){const n=state.sel.size;return n?`<div class="sel"><span>${n} تحليل · ${total()} جنيه</span><span class="acts"><button type="button" id="clr">بحث جديد</button><a href="#/book">احجز</a></span></div>`:''}
 function renderList(){const q=state.q.trim().toLowerCase();
- if(!q){$('#list').innerHTML='<p class="note">اكتب أول حرف من اسم التحليل وهيظهر لك سعره على طول.</p>';$('#selbar').innerHTML=state.sel.size?`<div class="sel"><span>${state.sel.size} تحليل · ${total()} جنيه</span><a href="#/book">احجز</a></div>`:'';return}
+ const qx=document.getElementById('qx');if(qx)qx.hidden=!state.q.trim();
+ if(!q){$('#list').innerHTML='<p class="note">اكتب أول حرف من اسم التحليل وهيظهر لك سعره على طول.</p>';$('#selbar').innerHTML=selbarHtml();return}
  const rows=T.filter(t=>(state.cat==='الكل'||t.cat===state.cat)&&t.name.trim().toLowerCase().startsWith(q));
  $('#list').innerHTML=rows.length?rows.map(t=>`<div class="row"><div><div dir="auto">${esc(t.name)}</div><div class="cat" dir="auto">${t.cat?'العينة: '+esc(t.cat):''}</div></div><div><span class="price">${priceText(t.price)}</span> <button type="button" class="add ${state.sel.has(t.id)?'on':''}" data-id="${t.id}">${state.sel.has(t.id)?'✓':'+'}</button></div></div>`).join(''):'<p class="note">مفيش تحليل بالاسم ده. اسأل المعمل على واتساب.</p>';
- const n=state.sel.size;$('#selbar').innerHTML=n?`<div class="sel"><span>${n} تحليل · ${total()} جنيه</span><a href="#/book">احجز</a></div>`:'';}
+ $('#selbar').innerHTML=selbarHtml();}
 function shareApp(){const url=location.href.split('#')[0];const text='جرّب تطبيق '+L.name+': أسعار التحاليل، حجز موعد، وإرسال الروشتة من الموبايل.';
  const m=document.getElementById('sharemsg');
  if(navigator.share){navigator.share({title:L.name,text:text,url:url}).catch(()=>{});return}
@@ -121,6 +124,8 @@ function bind(r){
    const msg='السلام عليكم، تقييمي عن '+L.name+': '+'★'.repeat(n)+'☆'.repeat(5-n)+' ('+n+' من 5)'+(t?'\nرأيي: '+t:'')+(nm?'\nالاسم: '+nm:'');
    e.target.href=waLink(msg);e.target.target='_blank';e.target.rel='noopener'}}
  if(r==='/prices'){$('#q').oninput=e=>{state.q=e.target.value;renderList()};
+  $('#qx').onclick=()=>{state.q='';$('#q').value='';renderList();$('#q').focus()};
+  $('#selbar').onclick=e=>{if(!e.target.closest('#clr'))return;state.sel.clear();safeSet('sel','[]');state.q='';$('#q').value='';renderList()};
   $('#list').onclick=e=>{const b=e.target.closest('.add');if(!b)return;const id=+b.dataset.id;state.sel.has(id)?state.sel.delete(id):state.sel.add(id);safeSet('sel',JSON.stringify([...state.sel]));renderList()};renderList()}
  if(r==='/book'){const pad=n=>String(n).padStart(2,'0'),nw=new Date(),today=nw.getFullYear()+'-'+pad(nw.getMonth()+1)+'-'+pad(nw.getDate());$('#bd').min=today;
   const hl=h=>{const ap=h<12?'صباحًا':(h<15?'ظهرًا':(h<18?'عصرًا':'مساءً')),x=h%12||12;return x+':00 '+ap};
