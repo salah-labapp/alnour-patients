@@ -56,6 +56,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:-1;
 body{background:#fff7fb}
 .sharebtn{background:linear-gradient(120deg,#f5b301,#ff8f00);color:#2a1237;font-size:18px;padding:16px;box-shadow:0 4px 12px rgba(245,179,1,.45)}.stars{display:flex;gap:6px;justify-content:center;margin:12px 0;direction:ltr}.star{background:none;border:0;padding:2px;cursor:pointer}.star svg{fill:#fff;stroke:#f5b301;stroke-width:1.6}.star.on svg{fill:#f5b301}</style>
 <meta name="description" content="معامل النور الطبية - أسعار التحاليل وحجز المعاد وإرسال الروشتة واتساب">
+<script>window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__dip=e;try{window.dispatchEvent(new Event("dipready"))}catch(_){}});</script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -69,7 +70,7 @@ body{background:#fff7fb}
 #installBar span{flex:1 1 calc(100% - 44px);line-height:1.7}
 #installBar svg{vertical-align:-4px}
 #installBtn{background:#f5b301;color:#2a1237;border:0;border-radius:10px;padding:9px 18px;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer}
-#installStrip{text-align:center;padding:6px 10px;background:#fff}#installStrip button{background:none;border:2px solid #7b2cbf;color:#7b2cbf;border-radius:10px;padding:7px 16px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#installCopy,#installOpen{background:#fff;color:#7b2cbf;border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:14px;font-family:inherit;text-decoration:none;cursor:pointer;white-space:nowrap}#installBar{flex-wrap:wrap}#installBar [hidden]{display:none}#installX{background:none;border:0;color:#fff;font-size:22px;padding:2px 8px;font-family:inherit;cursor:pointer;line-height:1}
+#guide{position:fixed;inset:0;z-index:99999;background:rgba(42,18,55,.78);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:14px}#guide[hidden]{display:none}.gbox{background:#fff;border-radius:16px;max-width:420px;width:100%;padding:16px;border:3px solid #f5b301;color:#2a1237;font-size:15px;line-height:1.8}.gbox h2{margin:0 0 6px;font-size:19px;color:#7b2cbf}.gbox ol{margin:6px 0;padding:0;list-style:none}.gbox li{margin:6px 0}.gbox li b:first-child{color:#e0218a}.gbox .gw{background:#fff4d6;border-radius:10px;padding:8px 10px;font-size:14px;margin:8px 0}.gbox button{display:block;width:100%;margin-top:8px;border:0;border-radius:12px;padding:13px;font-weight:700;font-size:16px;font-family:inherit;cursor:pointer;background:linear-gradient(120deg,#7b2cbf,#e0218a);color:#fff}#guideCopy{background:#fff;color:#7b2cbf;border:2px solid #7b2cbf}#installBtn{font-size:17px;padding:11px 26px}#installStrip{text-align:center;padding:6px 10px;background:#fff}#installStrip button{background:none;border:2px solid #7b2cbf;color:#7b2cbf;border-radius:10px;padding:7px 16px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#installCopy,#installOpen{background:#fff;color:#7b2cbf;border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:14px;font-family:inherit;text-decoration:none;cursor:pointer;white-space:nowrap}#installBar{flex-wrap:wrap}#installBar [hidden]{display:none}#installX{background:none;border:0;color:#fff;font-size:22px;padding:2px 8px;font-family:inherit;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -83,6 +84,7 @@ body{background:#fff7fb}
 <a id="installOpen" hidden>افتح في كروم</a>
 <button id="installX" type="button" aria-label="إغلاق">×</button>
 </div>
+<div id="guide" hidden><div class="gbox"><h2>طريقة تثبيت التطبيق</h2><div id="guideBody"></div><button id="guideCopy" type="button" hidden>انسخ الرابط</button><button id="guideClose" type="button">تمام، فهمت</button></div></div>
 <div id="installStrip"><button id="installAgain" type="button">ثبّت التطبيق على موبايلك (مجاني)</button></div>
 <main id="view"></main>
 <nav class="tabs" id="tabs">
@@ -222,10 +224,30 @@ window.addEventListener('hashchange',render);render();
  var inApp=/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MessengerLite|WhatsApp|Line\/|Snapchat|TikTok|Twitter|; wv\)|GSA\//i.test(ua);
  var SH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f5b301" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
  var link=location.origin+location.pathname;
- var deferred=null;
+ var deferred=window.__dip||null;
  function show(){bar.hidden=false}
+ var ov=document.getElementById('guide');
+ function guide(){
+  var G=document.getElementById('guideBody'),k;
+  var arrow='<svg viewBox="0 0 240 190" width="100%" style="max-width:300px;display:block;margin:6px auto"><rect x="50" y="4" width="140" height="182" rx="18" fill="#fff" stroke="#7b2cbf" stroke-width="3"/><rect x="60" y="22" width="120" height="110" rx="6" fill="#f3e6fb"/><rect x="50" y="150" width="140" height="36" rx="0" fill="#eee"/><g stroke="#7b2cbf" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M120 176V160"/><path d="m113 166 7-7 7 7"/><path d="M111 168h-3v14h24v-14h-3"/></g><circle cx="120" cy="170" r="16" fill="none" stroke="#e0218a" stroke-width="3"/><path d="M200 120 C185 120 175 150 140 166" stroke="#e0218a" stroke-width="4" fill="none" stroke-linecap="round"/><path d="m148 154-9 13 16 2z" fill="#e0218a"/></svg>';
+  var sheet='<svg viewBox="0 0 240 120" width="100%" style="max-width:300px;display:block;margin:6px auto"><rect x="30" y="4" width="180" height="112" rx="14" fill="#f2f2f7" stroke="#7b2cbf" stroke-width="3"/><rect x="42" y="14" width="156" height="20" rx="5" fill="#fff"/><rect x="42" y="40" width="156" height="20" rx="5" fill="#fff"/><rect x="42" y="66" width="156" height="22" rx="5" fill="#ffe9f4" stroke="#e0218a" stroke-width="3"/><text x="120" y="82" font-size="12" font-weight="700" fill="#2a1237" text-anchor="middle">إضافة إلى الشاشة الرئيسية</text><rect x="42" y="94" width="156" height="16" rx="5" fill="#fff"/><path d="M220 30v50" stroke="#e0218a" stroke-width="3"/><path d="m213 72 7 10 7-10" stroke="#e0218a" stroke-width="3" fill="none"/></svg>';
+  var st=function(n,t){return '<li><b>'+n+'</b> '+t+'</li>'};
+  var out='';
+  if(inApp){
+   out='<p class="gw">أنت فاتح التطبيق من داخل فيسبوك/ماسنجر/واتساب، والتثبيت مش بيشتغل من جواهم.</p><ol>'+(isIOS?st('1','اضغط النقط الثلاث أو أيقونة البوصلة واختار «فتح في Safari».')+st('2','لو مش لاقيها: اضغط "انسخ الرابط" تحت وافتح سفاري والصقه.')+st('3','بعدها اضغط هنا تاني واتبع الخطوات.'):st('1','اضغط "افتح في كروم" أو النقط الثلاث واختار «فتح في المتصفح».')+st('2','في كروم اضغط زر «تثبيت».'))+'</ol>'
+  } else if(isIOS){
+   var other=/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua);
+   out=(other?'<p class="gw">أنت فاتح من متصفح غير سفاري. الأضمن إنك تفتح الرابط في Safari (انسخ الرابط من الزر تحت).</p>':'')+'<ol>'+st('1','اضغط زر المشاركة (المربع اللي فيه سهم لفوق) - تحت في النص، أو فوق جنب شريط العنوان.')+'</ol>'+arrow+'<ol start="2">'+st('2','المربع اللي هيفتح: <b>اسحبه لفوق (اسكرول)</b> لحد ما تلاقي «إضافة إلى الشاشة الرئيسية» (Add to Home Screen). هي في القايمة التحتانية بعد النسخ والمفضلة.')+'</ol>'+sheet+'<ol start="3">'+st('3','اضغط عليها ثم «إضافة» فوق على اليمين.')+'</ol><p class="gw">لو مش ظاهرة: اتأكد إنك في Safari مش فاتح من فيسبوك، وإن الصفحة اتحمّلت كاملة، وفي آخر القايمة اضغط «تعديل الإجراءات» وفعّلها.</p>'
+  } else {
+   out='<ol>'+st('1','اضغط النقط الثلاث (⋮) أو الخطوط الثلاثة في المتصفح.')+st('2','اختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية» (في سامسونج: «إضافة الصفحة إلى» ثم «الشاشة الرئيسية»).')+st('3','اضغط «تثبيت» أو «إضافة».')+'</ol><p class="gw">لو الخيار مش ظاهر: افتح الرابط في Chrome مش من جوه فيسبوك.</p>'
+  }
+  G.innerHTML=out;ov.hidden=false;
+  var c2=document.getElementById('guideCopy');c2.hidden=!(inApp||(isIOS&&/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua)));c2.onclick=cp.onclick;
+  window.__dbgGuide=true}
+ document.getElementById('guideClose').onclick=function(){ov.hidden=true};
+
  function msg(){
-  btn.hidden=!deferred;cp.hidden=true;op.hidden=true;
+  btn.textContent=isIOS&&!inApp?'شوف الطريقة':'تثبيت';btn.hidden=!(deferred||(isAndroid&&!inApp)||(isIOS&&!inApp));cp.hidden=true;op.hidden=true;
   if(deferred){txt.textContent='ثبّت تطبيق معامل النور على موبايلك مجانًا - يفتح بضغطة ويشتغل حتى لو النت ضعيف';return}
   if(inApp){
    cp.hidden=false;
@@ -245,13 +267,13 @@ window.addEventListener('hashchange',render);render();
    return}
   txt.textContent='لتثبيت التطبيق: من قائمة المتصفح اختار «تثبيت» أو «إضافة إلى الشاشة الرئيسية». الأفضل تفتحه من موبايلك.'
  }
- window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;msg();show()});
- btn.onclick=function(){if(!deferred)return;deferred.prompt();Promise.resolve(deferred.userChoice).catch(function(){}).then(function(){deferred=null;bar.hidden=true})};
+ window.addEventListener('dipready',function(){deferred=window.__dip;msg();show()});
+ btn.onclick=function(){if(!deferred){guide();return}deferred.prompt();Promise.resolve(deferred.userChoice).catch(function(){}).then(function(){deferred=null;bar.hidden=true})};
  cp.onclick=function(){var done=function(){cp.textContent='تم النسخ'};
   try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(link).then(done).catch(old)}else old()}catch(e){old()}
   function old(){try{var t=document.createElement('input');t.value=link;document.body.appendChild(t);t.select();t.setSelectionRange(0,99);document.execCommand('copy');t.remove();done()}catch(e){cp.textContent=link}}};
  x.onclick=function(){bar.hidden=true};
- again.onclick=function(){msg();show();window.scrollTo(0,0)};
+ again.onclick=function(){if(deferred&&!isIOS){btn.onclick();return}guide()};
  window.addEventListener('appinstalled',function(){bar.hidden=true;strip.hidden=true});
  msg();show();
  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
