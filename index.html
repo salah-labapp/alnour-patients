@@ -66,10 +66,10 @@ body{background:#fff7fb}
 <style>
 #installBar{display:flex;gap:10px;align-items:center;background:linear-gradient(120deg,#7b2cbf,#e0218a);color:#fff;padding:10px 14px;font-size:14px;border-bottom:3px solid #f5b301}
 #installBar[hidden]{display:none}
-#installBar span{flex:1;line-height:1.7}
+#installBar span{flex:1 1 calc(100% - 44px);line-height:1.7}
 #installBar svg{vertical-align:-4px}
 #installBtn{background:#f5b301;color:#2a1237;border:0;border-radius:10px;padding:9px 18px;font-weight:700;font-size:15px;font-family:inherit;cursor:pointer}
-#installX{background:none;border:0;color:#fff;font-size:22px;padding:2px 8px;font-family:inherit;cursor:pointer;line-height:1}
+#installStrip{text-align:center;padding:6px 10px;background:#fff}#installStrip button{background:none;border:2px solid #7b2cbf;color:#7b2cbf;border-radius:10px;padding:7px 16px;font-weight:700;font-size:14px;font-family:inherit;cursor:pointer}#installCopy,#installOpen{background:#fff;color:#7b2cbf;border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:14px;font-family:inherit;text-decoration:none;cursor:pointer;white-space:nowrap}#installBar{flex-wrap:wrap}#installBar [hidden]{display:none}#installX{background:none;border:0;color:#fff;font-size:22px;padding:2px 8px;font-family:inherit;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -79,8 +79,11 @@ body{background:#fff7fb}
 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f5b301" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
 <span id="installText"></span>
 <button id="installBtn" type="button" hidden>تثبيت</button>
+<button id="installCopy" type="button" hidden>انسخ الرابط</button>
+<a id="installOpen" hidden>افتح في كروم</a>
 <button id="installX" type="button" aria-label="إغلاق">×</button>
 </div>
+<div id="installStrip"><button id="installAgain" type="button">ثبّت التطبيق على موبايلك (مجاني)</button></div>
 <main id="view"></main>
 <nav class="tabs" id="tabs">
 <a href="#/" data-r="/">الرئيسية</a><a href="#/prices" data-r="/prices">الأسعار</a><a href="#/book" data-r="/book">حجز</a><a href="#/rx" data-r="/rx">الروشتة</a><a href="#/contact" data-r="/contact">اتصل</a>
@@ -209,27 +212,48 @@ window.addEventListener('hashchange',render);render();
 })();
 </script>
 <script>(function(){
- var bar=document.getElementById('installBar');if(!bar)return;
- var btn=document.getElementById('installBtn'),txt=document.getElementById('installText'),x=document.getElementById('installX');
+ var bar=document.getElementById('installBar'),txt=document.getElementById('installText'),btn=document.getElementById('installBtn'),x=document.getElementById('installX'),cp=document.getElementById('installCopy'),op=document.getElementById('installOpen'),strip=document.getElementById('installStrip'),again=document.getElementById('installAgain');
+ if(!bar)return;
  var standalone=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
- if(standalone)return;
- x.onclick=function(){bar.hidden=true};
- var deferred=null;
- window.addEventListener('beforeinstallprompt',function(e){
-  e.preventDefault();deferred=e;
-  txt.textContent='ثبّت تطبيق معامل النور على موبايلك - يفتح بضغطة ويشتغل حتى لو النت قطع';
-  btn.hidden=false;bar.hidden=false;
- });
- btn.onclick=function(){if(!deferred)return;deferred.prompt();
-  Promise.resolve(deferred.userChoice).catch(function(){}).then(function(){deferred=null;bar.hidden=true})};
+ if(standalone){strip.hidden=true;return}
  var ua=navigator.userAgent||'';
+ var isAndroid=/android/i.test(ua);
  var isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
- var isSafari=/safari/i.test(ua)&&!/chrome|crios|fxios|edgios|android/i.test(ua);
- if(isIOS&&isSafari){
-  txt.innerHTML='لتثبيت التطبيق على الآيفون: اضغط زر المشاركة <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f5b301" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> ثم اختار «إضافة إلى الشاشة الرئيسية»';
-  bar.hidden=false;
+ var inApp=/FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|MessengerLite|WhatsApp|Line\/|Snapchat|TikTok|Twitter|; wv\)|GSA\//i.test(ua);
+ var SH='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f5b301" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+ var link=location.origin+location.pathname;
+ var deferred=null;
+ function show(){bar.hidden=false}
+ function msg(){
+  btn.hidden=!deferred;cp.hidden=true;op.hidden=true;
+  if(deferred){txt.textContent='ثبّت تطبيق معامل النور على موبايلك مجانًا - يفتح بضغطة ويشتغل حتى لو النت ضعيف';return}
+  if(inApp){
+   cp.hidden=false;
+   if(isAndroid){op.hidden=false;op.href='intent://'+location.host+location.pathname+'#Intent;scheme=https;package=com.android.chrome;end';
+    txt.innerHTML='أنت فاتح التطبيق من داخل تطبيق (فيسبوك/ماسنجر/واتساب). عشان تثبّته: اضغط "افتح في كروم"، أو من النقط الثلاث فوق اختار «فتح في المتصفح»، وبعدها «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».'}
+   else{txt.innerHTML='أنت فاتح التطبيق من داخل تطبيق (فيسبوك/ماسنجر/واتساب). افتحه في سفاري: اضغط النقط الثلاث أو أيقونة البوصلة واختار «فتح في Safari»، أو انسخ الرابط والصقه في سفاري. بعدها اضغط زر المشاركة '+SH+' ثم «إضافة إلى الشاشة الرئيسية».'}
+   return}
+  if(isIOS){
+   if(/CriOS|FxiOS|EdgiOS|OPiOS|DuckDuckGo/i.test(ua)){cp.hidden=false;txt.innerHTML='على الآيفون التثبيت بيتم من سفاري بس. انسخ الرابط وافتحه في Safari، بعدها اضغط زر المشاركة '+SH+' ثم «إضافة إلى الشاشة الرئيسية».'}
+   else{txt.innerHTML='لتثبيت التطبيق على الآيفون: اضغط زر المشاركة '+SH+' (تحت أو فوق) ثم اختار «إضافة إلى الشاشة الرئيسية» ثم «إضافة».'}
+   return}
+  if(isAndroid){
+   if(/SamsungBrowser/i.test(ua))txt.textContent='لتثبيت التطبيق: اضغط قائمة المتصفح (الخطوط الثلاثة) ثم «إضافة الصفحة إلى» ثم «الشاشة الرئيسية» أو «تثبيت التطبيق».';
+   else if(/Firefox/i.test(ua))txt.textContent='لتثبيت التطبيق: اضغط النقط الثلاث ثم «تثبيت» أو «إضافة إلى الشاشة الرئيسية».';
+   else if(/EdgA/i.test(ua))txt.textContent='لتثبيت التطبيق: اضغط الخطوط الثلاثة ثم «إضافة إلى الهاتف» أو «تثبيت».';
+   else txt.textContent='لتثبيت التطبيق: اضغط النقط الثلاث فوق ثم «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».';
+   return}
+  txt.textContent='لتثبيت التطبيق: من قائمة المتصفح اختار «تثبيت» أو «إضافة إلى الشاشة الرئيسية». الأفضل تفتحه من موبايلك.'
  }
- window.addEventListener('appinstalled',function(){bar.hidden=true});
+ window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;msg();show()});
+ btn.onclick=function(){if(!deferred)return;deferred.prompt();Promise.resolve(deferred.userChoice).catch(function(){}).then(function(){deferred=null;bar.hidden=true})};
+ cp.onclick=function(){var done=function(){cp.textContent='تم النسخ'};
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(link).then(done).catch(old)}else old()}catch(e){old()}
+  function old(){try{var t=document.createElement('input');t.value=link;document.body.appendChild(t);t.select();t.setSelectionRange(0,99);document.execCommand('copy');t.remove();done()}catch(e){cp.textContent=link}}};
+ x.onclick=function(){bar.hidden=true};
+ again.onclick=function(){msg();show();window.scrollTo(0,0)};
+ window.addEventListener('appinstalled',function(){bar.hidden=true;strip.hidden=true});
+ msg();show();
  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 })();</script>
 <script data-goatcounter="https://alnour.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
