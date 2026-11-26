@@ -1,5 +1,5 @@
 // خدمة العمل دون اتصال - معامل النور الطبية
-const V = 'alnour-v1';
+const V = 'alnour-v2';
 const SHELL = ['./', 'index.html', 'bg.css', 'slider.css', 'slider2.css', 'manifest.webmanifest'];
 
 self.addEventListener('install', e => {
