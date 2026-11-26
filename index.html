@@ -113,12 +113,18 @@ function renderList(){const qRaw=state.q.trim(),q=qRaw.toLowerCase();
  if(!qRaw){$('#list').innerHTML='<p class="note">اكتب أول حرف من اسم التحليل بالعربي أو الإنجليزي وهيظهر لك سعره على طول.</p>';$('#selbar').innerHTML=selbarHtml();return}
  const isAr=/[\u0600-\u06FF]/.test(qRaw),qa=normAr(qRaw);
  if(isAr&&!qa){$('#list').innerHTML='<p class="note">اكتب أول حرف من اسم التحليل بالعربي أو الإنجليزي وهيظهر لك سعره على طول.</p>';$('#selbar').innerHTML=selbarHtml();return}
- const rows=T.filter(t=>{
+ let rows=T.filter(t=>{
   if(state.cat!=='الكل'&&t.cat!==state.cat)return false;
   if(!isAr)return t.name.trim().toLowerCase().startsWith(q);
   const qw=qa.split(/[\s\u060C,;\-\u2013()\/]+/).filter(Boolean);
   const words=[t.name,t.ar,t.alt].flatMap(f=>normAr(f).split(/[\s\u060C,;\-\u2013()\/]+/)).filter(Boolean);
   return qw.every(w=>words.some(x=>x.startsWith(w)))});
+ if(isAr&&rows.length>1){const qw=qa.split(/[\s\u060C,;\-\u2013()\/]+/).filter(Boolean);
+  if(qw.length>1){const ph=rows.filter(t=>[t.name,t.ar,t.alt].some(f=>{const ws=normAr(f).split(/[\s\u060C,;\-\u2013()\/]+/).filter(Boolean);
+   for(let i=0;i+qw.length<=ws.length;i++){let ok=true;for(let j=0;j<qw.length;j++)if(!ws[i+j].startsWith(qw[j])){ok=false;break}
+   if(ok)return true}
+   return false}));
+   if(ph.length)rows=ph}}
  $('#list').innerHTML=rows.length?rows.map(t=>`<div class="row"><div><div dir="auto">${esc(t.name)}</div>${t.ar?`<div class="arn" dir="rtl">${esc(t.ar)}</div>`:''}<div class="cat" dir="auto">${t.cat?'العينة: '+esc(t.cat):''}</div></div><div><span class="price">${priceText(t.price)}</span> <button type="button" class="add ${state.sel.has(t.id)?'on':''}" data-id="${t.id}">${state.sel.has(t.id)?'✓':'+'}</button></div></div>`).join(''):'<p class="note">مفيش تحليل بالاسم ده. اسأل المعمل على واتساب.</p>';
  $('#selbar').innerHTML=selbarHtml();}
 function shareApp(){const url=location.href.split('#')[0];const text='جرّب تطبيق '+L.name+': أسعار التحاليل، حجز موعد، وإرسال الروشتة من الموبايل.';
